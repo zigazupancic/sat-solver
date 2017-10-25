@@ -1,2 +1,6 @@
 # SAT Solver
-Project for Logic in CS course
+Project for Logic in CS course.
+
+Authors:
+* Živa Urbančič
+* Žiga Zupančič
