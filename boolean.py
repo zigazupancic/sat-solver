@@ -168,7 +168,7 @@ counter = 0
 def freshVariable():
     global counter
     counter += 1
-    return Variable(("__", counter))
+    return Variable("x{}".format(counter))
 
 def tseytin(formula, mapping = None):
     if mapping is None:
