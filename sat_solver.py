@@ -1,4 +1,6 @@
 from boolean import *
+import dimacs_rw
+import sys
 
 
 def simplify_by_unit_clause(phi, l):
@@ -65,7 +67,7 @@ def SAT_solve(phi, val=[]):
     """
     valuation = val                     # Seznam z valuacijami
     rep = True                          # V spremenljivki rep se bo kasneje skrival pogoj za
-    newphi=phi
+    newphi = phi
     while rep:
         if len(phi.terms) == 0:
             return val
@@ -95,3 +97,7 @@ def SAT_solve(phi, val=[]):
                 variables = variables_.append(l)
         newphi = newphi_
 
+
+if __name__ == "__main__":
+    phi = dimacs_rw.dimacs_read(sys.argv[1])
+    solution = SAT_solve(phi)
