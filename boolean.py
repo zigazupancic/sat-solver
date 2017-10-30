@@ -10,11 +10,12 @@ class Formula:
             mapping[self] = freshVariable()
         return mapping[self]
 
+
 class Variable(Formula):
     def __init__(self, x):
         self.x = x
 
-    def __str__(self, parentheses = False):
+    def __str__(self, parentheses=False):
         return str(self.x)
 
     def __hash__(self):
@@ -38,11 +39,12 @@ class Variable(Formula):
     def equiv(self, variable):
         return And(Or(variable, Not(self)), Or(Not(variable), self))
 
+
 class Not(Formula):
     def __init__(self, x):
         self.x = makeFormula(x)
 
-    def __str__(self, parentheses = False):
+    def __str__(self, parentheses=False):
         return "!" + self.x.__str__(True)
 
     def __hash__(self):
@@ -75,6 +77,7 @@ class Not(Formula):
 
     def equiv(self, variable):
         return And(Or(variable, self.x), Or(Not(variable), self))
+
 
 class Multi(Formula):
     def __init__(self, *args):
@@ -124,6 +127,7 @@ class Multi(Formula):
         return self.getClass()(*(x.tseytin(mapping)
                                for x in self.terms)).getVariable(mapping)
 
+
 class And(Multi):
     empty = "T"
     connective = r" & "
@@ -138,6 +142,7 @@ class And(Multi):
     def equiv(self, variable):
         return And(Or(variable, *(Not(x).flatten() for x in self.terms)),
                    *(Or(Not(variable), x) for x in self.terms))
+
 
 class Or(Multi):
     empty = "F"
@@ -154,8 +159,10 @@ class Or(Multi):
         return And(Or(Not(variable), *self.terms),
                    *(Or(variable, Not(x)) for x in self.terms))
 
+
 T = And()
 F = Or()
+
 
 def makeFormula(x):
     if isinstance(x, Formula):
@@ -163,14 +170,17 @@ def makeFormula(x):
     else:
         return Variable(x)
 
+
 counter = 0
+
 
 def freshVariable():
     global counter
     counter += 1
     return Variable("x{}".format(counter))
 
-def tseytin(formula, mapping = None):
+
+def tseytin(formula, mapping=None):
     if mapping is None:
         mapping = {}
     f = formula.tseytin(mapping)

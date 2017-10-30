@@ -5,19 +5,28 @@ def simplify_by_unit_clause(phi, l):
     """
     :param phi: formula
     :param l: unit clause
-    :return: simplified formula phi
+    :return: simplified formula phi by l
     """
-    simpl_phi = phi.simplify()
-    if not isinstance(simpl_phi, Multi):
-        if simpl_phi == l:
-            return "T"
-        elif simpl_phi == Not(l):
-            return "F"
-        else:
-            return simpl_phi
-    else:
-        temp_clauses = []
-        for clause in simpl_phi.terms:
-            sbuc = simplify_by_unit_clause(clause, l)
-            temp_clauses.append(simplify_by_unit_clause(clause, l))
-        return phi.getClass()(*temp_clauses).simplify()
+    not_l = Not(l).simplify()
+    simpl_phi = []
+    for conjunct in phi.terms:
+        temp_conj = []
+        if isinstance(conjunct, Or):
+            for clause in conjunct.terms:
+                if clause == l:
+                    temp_conj = T
+                    break
+                elif clause != not_l:
+                    temp_conj.append(clause)
+            if temp_conj != T:
+                if len(temp_conj) > 1:
+                    simpl_phi.append(Or(temp_conj))
+                else:
+                    simpl_phi.append(temp_conj[0])
+        elif conjunct == not_l:
+            return F
+        elif conjunct != l:
+            simpl_phi.append(conjunct)
+    if len(simpl_phi) == 0:
+        return T
+    return And(*simpl_phi)
