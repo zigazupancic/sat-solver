@@ -56,59 +56,45 @@ def choose_literal(phi):
     return phi.terms[0].terms[0]
 
 
-def SAT_solve(phi):
+def SAT_solve(phi, val=[]):
     """
     Main function which takes a formula and computes a satisfying valuation or returns "False" if it is not satisfiable.
     :param phi: formula
+    :param val: list of formulas (variables or nots)
     :return: satisfying valuation or False
     """
-    valuation = {}                      # Slovar z valuacijami
-    if len(phi.terms) = 0:
-        return True                     # Kaj narediti v tem primeru?
+    valuation = val                     # Seznam z valuacijami
     rep = True                          # V spremenljivki rep se bo kasneje skrival pogoj za
-    phis = [phi]                        # Seznam s spremembami formule
-    newphi = phi
+    newphi=phi
     while rep:
+        if len(phi.terms) == 0:
+            return val
         l = find_unit_clause(newphi)
         if l != False:                  # Če imamo unit clause
             newphi_= simplify_by_unit_clause(newphi, l)
             if newphi_ == F:            # Nek clause se poenostavi v F
-                #reset valuation
+                return "unsatisfiable"
             elif newphi_ == T:          # Našli smo valuacijo
-                if isinstance(l, Not):
-                    valuation[Not(l).simplify()] = F
-                else:
-                    valuation[l] = T
+                valuation = valuation.append(l)
                 return valuation
             else:
-                if isinstance(l, Not):
-                    valuation[Not(l).simplify()] = F
-                else:
-                    valuation[l] = T
-                newphi = newphi_          # Za zadnjo poenostavljeno formulo vzamemo newphi_
-                phis.append(newphi)
-                continue
+                valuation = valuation.append(l)
         else:                           # Če nimamo unit clausa
             l = choose_literal(newphi)  # Izberemo neko spremenljivko
             newphi_ = simplify_by_unit_clause(newphi, l)
-            if newphi_ == F:            # Če poenostavljanje z l vrne fail
-                newphi_ = simplify_by_unit_clause(newphi, Not(l))       # Poskusimo z not(l)
-                if newphi_ == F:        # Če tudi to vrne fail
-                    # reset valuation
-                elif newphi_ == T:      # Če dobimo valuacijo
-                    #if isinstance(l, Not):
-                    #    valuation[Not(l).simplify()] = F
-                    #else:
-                    valuation[l] = T
-                    return valuation
-                else:                   # Sicer
-                    #if isinstance(l, Not):
-                    #    valuation[Not(l).simplify()] = F
-                    #else:
-                    valuation[l] = T
-                    newphi = newphi_
-                    phis.append(newphi)
-                    continue            # V zapiskih piše, da mora na tem mestu vrniti unsatisfiable?
+            variables_ = SAT_solve(newphi_, variables)
+            if variables_ == "unsatisfiable":
+                l = Not(l).simplify()
+                newphi_ = simplify_by_unit_clause(newphi, l)
+                variables_=SAT_solve(newphi_, variables)
+                if variables_ == "unsatisfiable":
+                    return "unsatisfiable"
+                else:
+                    variables = variables_.append(l)
+            else:
+                variables = variables_.append(l)
+        newphi = newphi_
+
 
 # Ideja: popravke v valuation označujemo z spremenljivko, ki smo jo na zadnje izbrali v koraku 4. Hkrati izbire na tem
 # koraku shranjujemo v nek list, da vedno lahko najdemo zadnjo izbiro.
