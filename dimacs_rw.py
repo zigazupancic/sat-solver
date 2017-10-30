@@ -2,13 +2,14 @@
 
 from boolean import *
 import warnings
+import os
 
 
-def dimacs_reader(file_name):
+def dimacs_read(file_name):
     """
     Reads a DIMACS file and returns a formula (constructed according to the file).
-    :param file_name: path of the DIMACS file
-    :return: formula in CNF
+    :param file_name: name of the DIMACS file.
+    :return: formula in CNF.
     """
     clauses = []
     num_var, num_clauses = 0, 0
@@ -41,3 +42,27 @@ def dimacs_reader(file_name):
     if num_clauses != len(clauses):
         warnings.warn("Number of clauses is not {}, but {}!".format(num_clauses, len(clauses)))
     return And(*clauses)
+
+
+def dimacs_write(variables, filename="sat_output", tf_form=False):
+    """
+    Saves variable values in a file.
+    :param variables: list of variables that are true if tf_form is False, otherwise pairs of (`var`, `var_value`),
+                      where `var` is the name of the variable and `var_value` its boolean value.
+    :param filename: name of the desired output file.
+    :param tf_form: type of input variables.
+    :return: name of the output file.
+    """
+    fn_num = 0
+    while os.path.isfile(filename):
+        fn_num += 1
+        filename = filename + str(fn_num)
+    output_variables = []
+    if tf_form:
+        for var, var_value in variables:
+            output_variables.append(var[1:] if var_value else "-" + var[1:])
+    else:
+        for var in variables:
+            output_variables.append("-" + var.x.x[1:] if isinstance(var, Not) else var[1:])
+    with open(filename, "w") as file:
+        file.write(" ".join(output_variables))
