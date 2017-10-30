@@ -61,7 +61,7 @@ def SAT_solve(phi, val=[]):
     Main function which takes a formula and computes a satisfying valuation or returns "False" if it is not satisfiable.
     :param phi: formula
     :param val: list of formulas (variables or nots)
-    :return: satisfying valuation or False
+    :return: satisfying valuation or "unsatisfiable"
     """
     valuation = val                     # Seznam z valuacijami
     rep = True                          # V spremenljivki rep se bo kasneje skrival pogoj za
@@ -95,6 +95,3 @@ def SAT_solve(phi, val=[]):
                 variables = variables_.append(l)
         newphi = newphi_
 
-
-# Ideja: popravke v valuation označujemo z spremenljivko, ki smo jo na zadnje izbrali v koraku 4. Hkrati izbire na tem
-# koraku shranjujemo v nek list, da vedno lahko najdemo zadnjo izbiro.
