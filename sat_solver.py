@@ -1,4 +1,6 @@
 from boolean import *
+import dimacs_rw
+import sys
 
 
 def simplify_by_unit_clause(phi, l):
@@ -63,7 +65,7 @@ def SAT_solve(phi):
     :return: satisfying valuation or False
     """
     valuation = {}                      # Slovar z valuacijami
-    if len(phi.terms) = 0:
+    if len(phi.terms) == 0:
         return True                     # Kaj narediti v tem primeru?
     rep = True                          # V spremenljivki rep se bo kasneje skrival pogoj za
     phis = [phi]                        # Seznam s spremembami formule
@@ -73,6 +75,7 @@ def SAT_solve(phi):
         if l != False:                  # Če imamo unit clause
             newphi_= simplify_by_unit_clause(newphi, l)
             if newphi_ == F:            # Nek clause se poenostavi v F
+                pass
                 #reset valuation
             elif newphi_ == T:          # Našli smo valuacijo
                 if isinstance(l, Not):
@@ -94,6 +97,7 @@ def SAT_solve(phi):
             if newphi_ == F:            # Če poenostavljanje z l vrne fail
                 newphi_ = simplify_by_unit_clause(newphi, Not(l))       # Poskusimo z not(l)
                 if newphi_ == F:        # Če tudi to vrne fail
+                    pass
                     # reset valuation
                 elif newphi_ == T:      # Če dobimo valuacijo
                     #if isinstance(l, Not):
@@ -112,3 +116,8 @@ def SAT_solve(phi):
 
 # Ideja: popravke v valuation označujemo z spremenljivko, ki smo jo na zadnje izbrali v koraku 4. Hkrati izbire na tem
 # koraku shranjujemo v nek list, da vedno lahko najdemo zadnjo izbiro.
+
+
+if __name__ == "__main__":
+    phi = dimacs_rw.dimacs_read(sys.argv[1])
+    solution = SAT_solve(phi)
