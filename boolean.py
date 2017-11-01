@@ -134,7 +134,7 @@ class Multi(Formula):
                                for x in self.terms)).getVariable(mapping)
 
     def listing(self):
-        return [y for y in self.terms]
+        return [y.flatten().simplify() for y in self.terms]
 
 
 class And(Multi):

@@ -64,7 +64,7 @@ def choose_literal(phi):
         return False
 
 
-def SAT_solve(phi, val=[]):
+def SAT_solve(phi, val=set()):
     """
     Main function which takes a formula and computes a satisfying valuation or returns "False" if it is not satisfiable.
     :param phi: formula
@@ -83,10 +83,10 @@ def SAT_solve(phi, val=[]):
             if newphi_ == F:            # There is an empty clause
                 return "unsatisfiable"
             elif newphi_ == T:          # We have found a valuation
-                valuation = valuation.append(l)
+                valuation = valuation.add(l)
                 return valuation
             else:
-                valuation = valuation.append(l)
+                valuation = valuation.add(l)
         else:                           # If there is no unit clause in the formula
             l = choose_literal(newphi)  # We choose a literal l to simplify the formula by
             newphi_ = simplify_by_unit_clause(newphi, l)
@@ -98,9 +98,9 @@ def SAT_solve(phi, val=[]):
                 if valuation_ == "unsatisfiable":       # If simplifying by Not(l) fails
                     return "unsatisfiable"
                 else:
-                    valuation = valuation_.append(l)    # If we can simplify by Not(l)
+                    valuation = valuation_.add(l)    # If we can simplify by Not(l)
             else:
-                valuation = valuation_.append(l)        # If we can simplify by l
+                valuation = valuation_.add(l)        # If we can simplify by l
         newphi = newphi_
 
 
