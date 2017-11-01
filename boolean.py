@@ -39,6 +39,9 @@ class Variable(Formula):
     def equiv(self, variable):
         return And(Or(variable, Not(self)), Or(Not(variable), self))
 
+    def listing(self):
+        return [self.x]
+
 
 class Not(Formula):
     def __init__(self, x):
@@ -77,6 +80,9 @@ class Not(Formula):
 
     def equiv(self, variable):
         return And(Or(variable, self.x), Or(Not(variable), self))
+
+    def listing(self):
+        return [self.flatten().simplify()]
 
 
 class Multi(Formula):
@@ -126,6 +132,9 @@ class Multi(Formula):
     def tseytin(self, mapping):
         return self.getClass()(*(x.tseytin(mapping)
                                for x in self.terms)).getVariable(mapping)
+
+    def listing(self):
+        return [y for y in self.terms]
 
 
 class And(Multi):

@@ -29,6 +29,11 @@ class TestSatSolver(unittest.TestCase):
         sim_phi = sats.simplify_by_unit_clause(phi, "p")
         self.assertEqual(sim_phi.flatten(), sats.Not("q"))
 
+        phi = sats.And(sats.Or("p"), sats.Not("q"))
+        sim_phi = sats.SAT_solve(phi)
+        self.assertEqual(sim_phi, [sats.Variable("p"), sats.Not("q")])
+
+
 
 if __name__ == '__main__':
     unittest.main()

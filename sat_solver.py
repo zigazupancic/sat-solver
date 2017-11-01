@@ -40,10 +40,10 @@ def find_unit_clause(phi):
     :param phi: formula
     :return: unit clause or False if there is no unit clause in the formula
     """
-    i = 0   # Predpostavljam, da phi.terms ni prazen seznam!
-    while i <= len(phi.terms):
-        if isinstance(phi.terms[i], Variable):
-            return phi.terms[i]
+    i = 0   # Assuming phi.terms is not empty, otherwise returns False
+    while i < len(phi.listing()):
+        if isinstance(phi.listing()[i], Variable):
+            return phi.listing()[i]
         else:
             i += 1
     return False
@@ -55,7 +55,13 @@ def choose_literal(phi):
     :param phi: formula
     :return: a literal
     """
-    return phi.terms[0].terms[0]
+    if len(phi.listing()) > 0:
+        if len(phi.listing()[0].listing()) > 0:
+            return phi.listing()[0].listing()[0]        # Assuming phi.terms is not empty
+        else:
+            return phi.listing[0]
+    else:
+        return False
 
 
 def SAT_solve(phi, val=[]):
@@ -65,36 +71,36 @@ def SAT_solve(phi, val=[]):
     :param val: list of formulas (variables or nots)
     :return: satisfying valuation or "unsatisfiable"
     """
-    valuation = val                     # Seznam z valuacijami
-    rep = True                          # V spremenljivki rep se bo kasneje skrival pogoj za
+    valuation = val                     # List with valuations
+    rep = True                          # Variable rep will later contain stopping condition for while loop
     newphi = phi
     while rep:
         if len(phi.terms) == 0:
             return val
         l = find_unit_clause(newphi)
-        if l != False:                  # Če imamo unit clause
+        if l != False:                  # If we have a unit clause in the formula
             newphi_= simplify_by_unit_clause(newphi, l)
-            if newphi_ == F:            # Nek clause se poenostavi v F
+            if newphi_ == F:            # There is an empty clause
                 return "unsatisfiable"
-            elif newphi_ == T:          # Našli smo valuacijo
+            elif newphi_ == T:          # We have found a valuation
                 valuation = valuation.append(l)
                 return valuation
             else:
                 valuation = valuation.append(l)
-        else:                           # Če nimamo unit clausa
-            l = choose_literal(newphi)  # Izberemo neko spremenljivko
+        else:                           # If there is no unit clause in the formula
+            l = choose_literal(newphi)  # We choose a literal l to simplify the formula by
             newphi_ = simplify_by_unit_clause(newphi, l)
-            variables_ = SAT_solve(newphi_, variables)
-            if variables_ == "unsatisfiable":
+            valuation_ = SAT_solve(newphi_, valuation)
+            if valuation_ == "unsatisfiable":           # If simplifying by l fails
                 l = Not(l).simplify()
                 newphi_ = simplify_by_unit_clause(newphi, l)
-                variables_=SAT_solve(newphi_, variables)
-                if variables_ == "unsatisfiable":
+                valuation_ = SAT_solve(newphi_, valuation)
+                if valuation_ == "unsatisfiable":       # If simplifying by Not(l) fails
                     return "unsatisfiable"
                 else:
-                    variables = variables_.append(l)
+                    valuation = valuation_.append(l)    # If we can simplify by Not(l)
             else:
-                variables = variables_.append(l)
+                valuation = valuation_.append(l)        # If we can simplify by l
         newphi = newphi_
 
 
