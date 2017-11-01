@@ -42,7 +42,7 @@ def find_unit_clause(phi):
     """
     i = 0   # Assuming phi.terms is not empty, otherwise returns False
     while i < len(phi.listing()):
-        if isinstance(phi.listing()[i], Variable):
+        if len(phi.listing()[i]) == 1:
             return phi.listing()[i]
         else:
             i += 1
@@ -75,7 +75,7 @@ def SAT_solve(phi, val=set()):
     rep = True                          # Variable rep will later contain stopping condition for while loop
     newphi = phi
     while rep:
-        if len(phi.terms) == 0:
+        if newphi == T:
             return val
         l = find_unit_clause(newphi)
         if l != False:                  # If we have a unit clause in the formula
@@ -83,10 +83,10 @@ def SAT_solve(phi, val=set()):
             if newphi_ == F:            # There is an empty clause
                 return "unsatisfiable"
             elif newphi_ == T:          # We have found a valuation
-                valuation = valuation.add(l)
+                valuation.add(l)
                 return valuation
             else:
-                valuation = valuation.add(l)
+                valuation.add(l)
         else:                           # If there is no unit clause in the formula
             l = choose_literal(newphi)  # We choose a literal l to simplify the formula by
             newphi_ = simplify_by_unit_clause(newphi, l)
@@ -98,9 +98,11 @@ def SAT_solve(phi, val=set()):
                 if valuation_ == "unsatisfiable":       # If simplifying by Not(l) fails
                     return "unsatisfiable"
                 else:
-                    valuation = valuation_.add(l)    # If we can simplify by Not(l)
+                    valuation_.add(l)    # If we can simplify by Not(l)
+                    valuation = valuation_
             else:
-                valuation = valuation_.add(l)        # If we can simplify by l
+                valuation_.add(l)        # If we can simplify by l
+                valuation = valuation_
         newphi = newphi_
 
 
