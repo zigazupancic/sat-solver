@@ -63,6 +63,6 @@ def dimacs_write(variables, filename="sat_output", tf_form=False):
             output_variables.append(var[1:] if var_value else "-" + var[1:])
     else:
         for var in variables:
-            output_variables.append("-" + var.x.x[1:] if isinstance(var, Not) else var[1:])
+            output_variables.append("-" + var.x.x[1:] if isinstance(var, Not) else var.x[1:])
     with open(filename, "w") as file:
         file.write(" ".join(output_variables))

@@ -22,7 +22,7 @@ def simplify_by_unit_clause(phi, l):
                     temp_conj.append(clause)
             if temp_conj != T:
                 if len(temp_conj) > 1:
-                    simpl_phi.append(Or(temp_conj))
+                    simpl_phi.append(Or(*temp_conj))
                 else:
                     simpl_phi.append(temp_conj[0])
         elif conjunct == not_l:
@@ -34,19 +34,19 @@ def simplify_by_unit_clause(phi, l):
     return And(*simpl_phi)
 
 
-def find_unit_clause(phi):
+def find_unit_clauses(phi):
     """
-    Finds the first unit clause in formula phi. If phi has no unit clauses it returns False.
+    Finds unit clauses in formula phi. If phi has no unit clauses it returns False.
     :param phi: formula
-    :return: unit clause or False if there is no unit clause in the formula
+    :return: list of unit clauses or False if there is no unit clause in the formula
     """
     i = 0   # Assuming phi.terms is not empty, otherwise returns False
-    while i < len(phi.listing()):
-        if len(phi.listing()[i]) == 1:
-            return phi.listing()[i]
-        else:
-            i += 1
-    return False
+    phi = phi.listing()
+    unit_clauses = []
+    for clause in phi:
+        if isinstance(clause, Variable) or isinstance(clause, Not):
+            unit_clauses.append(clause)
+    return unit_clauses
 
 
 def choose_literal(phi):
@@ -77,8 +77,8 @@ def SAT_solve(phi, val=set()):
     while rep:
         if newphi == T:
             return val
-        l = find_unit_clause(newphi)
-        if l != False:                  # If we have a unit clause in the formula
+        unit_clauses = find_unit_clauses(newphi)
+        for l in unit_clauses:                 # If we have a unit clause in the formula
             newphi_= simplify_by_unit_clause(newphi, l)
             if newphi_ == F:            # There is an empty clause
                 return "unsatisfiable"
@@ -87,25 +87,26 @@ def SAT_solve(phi, val=set()):
                 return valuation
             else:
                 valuation.add(l)
-        else:                           # If there is no unit clause in the formula
-            l = choose_literal(newphi)  # We choose a literal l to simplify the formula by
+        l = choose_literal(newphi)  # We choose a literal l to simplify the formula by
+        print(l)
+        newphi_ = simplify_by_unit_clause(newphi, l)
+        valuation_ = SAT_solve(newphi_, valuation)
+        if valuation_ == "unsatisfiable":           # If simplifying by l fails
+            l = Not(l).simplify()
             newphi_ = simplify_by_unit_clause(newphi, l)
             valuation_ = SAT_solve(newphi_, valuation)
-            if valuation_ == "unsatisfiable":           # If simplifying by l fails
-                l = Not(l).simplify()
-                newphi_ = simplify_by_unit_clause(newphi, l)
-                valuation_ = SAT_solve(newphi_, valuation)
-                if valuation_ == "unsatisfiable":       # If simplifying by Not(l) fails
-                    return "unsatisfiable"
-                else:
-                    valuation_.add(l)    # If we can simplify by Not(l)
-                    valuation = valuation_
+            if valuation_ == "unsatisfiable":       # If simplifying by Not(l) fails
+                return "unsatisfiable"
             else:
-                valuation_.add(l)        # If we can simplify by l
+                valuation_.add(l)    # If we can simplify by Not(l)
                 valuation = valuation_
+        else:
+            valuation_.add(l)        # If we can simplify by l
+            valuation = valuation_
         newphi = newphi_
 
 
 if __name__ == "__main__":
     phi = dimacs_rw.dimacs_read(sys.argv[1])
     solution = SAT_solve(phi)
+    dimacs_rw.dimacs_write(list(solution))
