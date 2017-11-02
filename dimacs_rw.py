@@ -65,4 +65,29 @@ def dimacs_write(variables, filename="sat_output", tf_form=False):
         for var in variables:
             output_variables.append("-" + var.x.x[1:] if isinstance(var, Not) else var.x[1:])
     with open(filename, "w") as file:
-        file.write(" ".join(output_variables))
+        if len(variables) == 0:
+            file.write("0")
+        else:
+            file.write(" ".join(output_variables))
+
+
+def dimacs_read_output(file_name):
+    """
+    Reads a DIMACS output file and returns a dictionary of variables (constructed according to the file).
+    :param file_name: name of the DIMACS file.
+    :return: dictionary, key = name of the variable, value = boolean value of the variable
+    """
+    variables = {}
+    with open(file_name) as file:
+        for line in file:
+            line = line.strip()
+            if line == "" or line[0].lower() == "c":
+                continue
+            else:
+                read_vars = [int(var) for var in line.split()]
+                for var in read_vars:
+                    if var > 0:
+                        variables["x{}".format(var)] = True
+                    else:
+                        variables["x{}".format(-var)] = False
+    return variables

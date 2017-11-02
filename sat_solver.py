@@ -40,11 +40,11 @@ def find_unit_clauses(phi):
     :param phi: formula
     :return: list of unit clauses or False if there is no unit clause in the formula
     """
-    i = 0   # Assuming phi.terms is not empty, otherwise returns False
-    phi = phi.listing()
     unit_clauses = []
-    for clause in phi:
-        if isinstance(clause, Variable) or isinstance(clause, Not):
+    phi = phi.flatten()
+    for clause in phi.terms:
+        clause = clause.flatten()
+        if (isinstance(clause, Variable) or isinstance(clause, Not)) and clause not in unit_clauses:
             unit_clauses.append(clause)
     return unit_clauses
 
@@ -55,13 +55,14 @@ def choose_literal(phi):
     :param phi: formula
     :return: a literal
     """
-    if len(phi.listing()) > 0:
-        if len(phi.listing()[0].listing()) > 0:
-            return phi.listing()[0].listing()[0]        # Assuming phi.terms is not empty
-        else:
-            return phi.listing[0]
-    else:
-        return False
+    phi = phi.flatten()
+    if isinstance(phi, Multi):
+        x = next(iter(phi.terms))
+        x = x.flatten()
+        if isinstance(x, Multi):
+            x = next(iter(x.terms))
+        return x
+    return phi
 
 
 def SAT_solve(phi, val=set()):
@@ -77,6 +78,8 @@ def SAT_solve(phi, val=set()):
     while rep:
         if newphi == T:
             return val
+        if newphi == F:
+            return "unsatisfiable"
         unit_clauses = find_unit_clauses(newphi)
         for l in unit_clauses:                 # If we have a unit clause in the formula
             newphi_= simplify_by_unit_clause(newphi, l)
@@ -87,8 +90,8 @@ def SAT_solve(phi, val=set()):
                 return valuation
             else:
                 valuation.add(l)
+            newphi = newphi_
         l = choose_literal(newphi)  # We choose a literal l to simplify the formula by
-        print(l)
         newphi_ = simplify_by_unit_clause(newphi, l)
         valuation_ = SAT_solve(newphi_, valuation)
         if valuation_ == "unsatisfiable":           # If simplifying by l fails
@@ -109,4 +112,8 @@ def SAT_solve(phi, val=set()):
 if __name__ == "__main__":
     phi = dimacs_rw.dimacs_read(sys.argv[1])
     solution = SAT_solve(phi)
-    dimacs_rw.dimacs_write(list(solution))
+    if len(sys.argv) > 1:
+        out_file_name = sys.argv[2]
+    else:
+        out_file_name = sys.argv[1] + "_output"
+    dimacs_rw.dimacs_write(list(solution), out_file_name)
