@@ -53,10 +53,6 @@ def dimacs_write(variables, filename="sat_output", tf_form=False):
     :param tf_form: type of input variables.
     :return: name of the output file.
     """
-    fn_num = 0
-    while os.path.isfile(filename):
-        fn_num += 1
-        filename = filename + str(fn_num)
     output_variables = []
     if tf_form:
         for var, var_value in variables:
