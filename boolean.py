@@ -27,6 +27,9 @@ class Variable(Formula):
         else:
             return self.x == other
 
+    def __lt__(self, other):
+        return self.__str__() < other.__str__()
+
     def evaluate(self, values):
         return values[self.x]
 
@@ -55,6 +58,9 @@ class Not(Formula):
 
     def __eq__(self, other):
         return isinstance(other, Not) and self.x == other.x
+
+    def __lt__(self, other):
+        return self.__str__() <= self.__str__()
 
     def evaluate(self, values):
         return not self.x.evaluate(values)
