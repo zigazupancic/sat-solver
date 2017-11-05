@@ -1,17 +1,16 @@
 from boolean import *
 import dimacs_rw
-import heapq
 import sys
 
 
 sys.setrecursionlimit(2000)
 
 
-def get_variable_occurrences(phi):
+def select_next_variable(phi):
     """
-    Returns a heap of pairs (-occurrences, variable).
+    Returns the most frequent variable in phi.
     :param phi: formula phi.
-    :return: heap (according to occurrences) -- max at the top.
+    :return: variable.
     """
     occurrences = {}
     for or_term in phi.terms:
@@ -22,11 +21,11 @@ def get_variable_occurrences(phi):
                 occurrences[variable] += 1
             else:
                 occurrences[variable] = 1
-    occurrences_heap = []
+    max = (0, "")
     for key in occurrences.keys():
-        occurrences_heap.append((-occurrences[key], key))
-    heapq.heapify(occurrences_heap)
-    return occurrences_heap
+        if occurrences[key] > max[0]:
+            max = (occurrences[key], key)
+    return max[1]
 
 
 def simplify_by_clauses(phi, clauses):
@@ -69,60 +68,44 @@ def find_unit_clauses(phi):
     return unit_clauses
 
 
-def SAT_solve(phi, valuation=set(), variable_occurrences=None):
+def SAT_solve(phi):
     """
     Main function which takes a formula and computes a satisfying valuation or returns "False" if it is not satisfiable.
     :param phi: formula
-    :param valuation: list of formulas (variables or nots)
-    :param variable_occurrences: heap of pairs (-occurrences, variable)
-    :return: satisfying valuation or "unsatisfiable"
+    :return: satisfying valuation or False
     """
-    if variable_occurrences is None:
-        variable_occurrences = get_variable_occurrences(phi)
-    while 1:
+    valuation = set()
+    if phi == T:
+        return valuation
+    elif phi == F:
+        return False
+
+    unit_clauses = find_unit_clauses(phi)
+    if len(unit_clauses) > 0:
+        phi = simplify_by_clauses(phi, unit_clauses)
+        valuation.update(unit_clauses)
         if phi == T:
             return valuation
         elif phi == F:
-            return "unsatisfiable"
+            return False
+        new_valuation = SAT_solve(phi)
+        if new_valuation is False:
+            return False
+        valuation.update(new_valuation)
+        return valuation
 
-        unit_clauses = find_unit_clauses(phi)
-        if len(unit_clauses) > 0:
-            phi = simplify_by_clauses(phi, unit_clauses)
-            valuation.update(unit_clauses)
-            if phi == T:
-                return valuation
-            elif phi == F:
-                return "unsatisfiable"
-            continue
+    var = select_next_variable(phi)
 
-        try:
-            var = heapq.heappop(variable_occurrences)[1]  # We choose a literal var to simplify the formula by
-        except IndexError:
-            return valuation
-        while var in valuation or Not(var).flatten() in valuation:
-            try:
-                var = heapq.heappop(variable_occurrences)[1]
-            except IndexError:
-
-                return valuation
-
-        new_phi = simplify_by_clauses(phi, [var])
-        new_valuation = valuation.copy()
-        new_variable_occurrences = variable_occurrences[:]
-        new_valuation = SAT_solve(new_phi, new_valuation, new_variable_occurrences)
-        if new_valuation == "unsatisfiable":           # If simplifying by var fails
-            var = Not(var).flatten()
-            phi = simplify_by_clauses(phi, [var])
-            valuation.add(var)
-            valuation = SAT_solve(phi, valuation, variable_occurrences)
-            if valuation == "unsatisfiable":       # If simplifying by Not(var) fails
-                return "unsatisfiable"
-        else:
-            variable_occurrences = new_variable_occurrences
-            valuation = new_valuation.copy()        # If we can simplify by var
-            valuation.add(var)
-            phi = new_phi
-        phi.flatten().simplify()
+    new_phi = simplify_by_clauses(phi, {var})
+    new_valuation = SAT_solve(new_phi)
+    if new_valuation is False:           # If simplifying by var fails
+        var = Not(var).flatten()
+        phi = simplify_by_clauses(phi, {var})
+        new_valuation = SAT_solve(phi)
+        if new_valuation is False:
+            return False
+    new_valuation.add(var)
+    return new_valuation
 
 
 if __name__ == "__main__":
