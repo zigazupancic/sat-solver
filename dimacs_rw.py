@@ -30,7 +30,11 @@ def dimacs_read(file_name):
                     raise
             else:
                 try:
-                    clause = [int(var) for var in line.split()][:-1]
+                    row = [int(var) for var in line.split()]
+                    if row[-1] == 0:
+                        clause = row[:-1]
+                    else:
+                        clause = row
                 except ValueError:
                     print("Error in line {}. Line should be of the form: 'cl_1 cl_2 ... cl_n', where cl_i"
                           " is the name of a variable (an integer). \n"

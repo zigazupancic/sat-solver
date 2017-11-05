@@ -14,35 +14,14 @@ def get_variable_occurrences(phi):
     :return: heap (according to occurrences) -- max at the top.
     """
     occurrences = {}
-    if not isinstance(phi, And):
-        if not isinstance(phi, Or):
-            if not isinstance(phi, Not):
-                return {phi: 1}
-            else:
-                return {Not(phi).flatten(): 1}
-        for variable in phi.terms:
+    for or_term in phi.terms:
+        for variable in or_term.terms:
             if isinstance(variable, Not):
                 variable = Not(variable).flatten()
             if variable in occurrences.keys():
                 occurrences[variable] += 1
             else:
                 occurrences[variable] = 1
-    for term in phi.terms:
-        if not isinstance(term, Or):
-            if isinstance(term, Not):
-                term = Not(term).flatten()
-            if term in occurrences.keys():
-                occurrences[term] += 1
-            else:
-                occurrences[term] = 1
-        else:
-            for variable in term.terms:
-                if isinstance(variable, Not):
-                    variable = Not(variable).flatten()
-                if variable in occurrences.keys():
-                    occurrences[variable] += 1
-                else:
-                    occurrences[variable] = 1
     occurrences_heap = []
     for key in occurrences.keys():
         occurrences_heap.append((-occurrences[key], key))
@@ -56,34 +35,9 @@ def simplify_by_clauses(phi, clauses):
     :param clauses: list of clauses.
     :return: simplified formula phi by clauses.
     """
-    n_clauses = [Not(clause).simplify() for clause in clauses]
-    phi = phi.flatten().simplify()
-    if not isinstance(phi, And):
-        if not isinstance(phi, Or):
-            if phi in clauses:
-                return T
-            elif phi in n_clauses:
-                return F
-            else:
-                return phi
-        remaining_variables = []
-        for variable in phi.terms:
-            if variable in clauses:
-                return T
-            elif variable not in n_clauses:
-                remaining_variables.append(variable)
-        if len(remaining_variables) == 0:
-            return False
-        else:
-            return Or(*remaining_variables)
+    n_clauses = set([Not(clause).simplify() for clause in clauses])
     remaining_terms = []
     for term in phi.terms:
-        if not isinstance(term, Or):
-            if term in n_clauses:
-                return F
-            elif term not in clauses:
-                remaining_terms.append(term)
-            continue
         remaining_variables = []
         for variable in term.terms:
             if variable in clauses:
@@ -91,10 +45,8 @@ def simplify_by_clauses(phi, clauses):
                 break
             elif variable not in n_clauses:
                 remaining_variables.append(variable)
-        if remaining_variables != T and len(remaining_variables) > 1:
+        if remaining_variables != T and len(remaining_variables) >= 1:
             remaining_terms.append(Or(*remaining_variables))
-        elif remaining_variables != T and len(remaining_variables) == 1:
-            remaining_terms.append(remaining_variables[0])
         elif remaining_variables != T and len(remaining_variables) == 0:
             return F
     if len(remaining_terms) == 0:
@@ -107,17 +59,13 @@ def find_unit_clauses(phi):
     """
     Finds unit clauses in formula phi.
     :param phi: formula
-    :return: list of unit clauses.
+    :return: set of unit clauses.
     """
-    unit_clauses = []
-    if not isinstance(phi, And):
-        if not isinstance(phi, Or):
-            return [phi]
-        return [var for var in phi.terms]
+    unit_clauses = set()
     for clause in phi.terms:
         clause = clause.flatten()
-        if (isinstance(clause, Variable) or isinstance(clause, Not)) and clause not in unit_clauses:
-            unit_clauses.append(clause)
+        if isinstance(clause, Variable) or isinstance(clause, Not):
+            unit_clauses.add(clause)
     return unit_clauses
 
 
@@ -140,7 +88,7 @@ def SAT_solve(phi, valuation=set(), variable_occurrences=None):
         unit_clauses = find_unit_clauses(phi)
         if len(unit_clauses) > 0:
             phi = simplify_by_clauses(phi, unit_clauses)
-            valuation.update(set(unit_clauses))
+            valuation.update(unit_clauses)
             if phi == T:
                 return valuation
             elif phi == F:
