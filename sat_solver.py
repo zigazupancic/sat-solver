@@ -160,7 +160,8 @@ def SAT_solve(phi, valuation=set(), variable_occurrences=None):
 
         new_phi = simplify_by_clauses(phi, [var])
         new_valuation = valuation.copy()
-        new_valuation = SAT_solve(new_phi, new_valuation, variable_occurrences)
+        new_variable_occurrences = variable_occurrences[:]
+        new_valuation = SAT_solve(new_phi, new_valuation, new_variable_occurrences)
         if new_valuation == "unsatisfiable":           # If simplifying by var fails
             var = Not(var).flatten()
             phi = simplify_by_clauses(phi, [var])
@@ -169,9 +170,11 @@ def SAT_solve(phi, valuation=set(), variable_occurrences=None):
             if valuation == "unsatisfiable":       # If simplifying by Not(var) fails
                 return "unsatisfiable"
         else:
+            variable_occurrences = new_variable_occurrences
             valuation = new_valuation.copy()        # If we can simplify by var
             valuation.add(var)
             phi = new_phi
+        phi.flatten().simplify()
 
 
 if __name__ == "__main__":
