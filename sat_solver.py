@@ -21,7 +21,7 @@ def select_next_variable(phi):
                 occurrences[variable] += 1
             else:
                 occurrences[variable] = 1
-    max = (0, "")
+    max = (0, None)
     for key in occurrences.keys():
         if occurrences[key] > max[0]:
             max = (occurrences[key], key)
@@ -34,11 +34,16 @@ def simplify_by_clauses(phi, clauses):
     :param clauses: list of clauses.
     :return: simplified formula phi by clauses.
     """
-    n_clauses = set([Not(clause).simplify() for clause in clauses])
+    n_clauses = set([Not(clause).flatten() for clause in clauses])
     remaining_terms = []
     for term in phi.terms:
         remaining_variables = []
+        if len(term.terms) == 1:
+            variable = next(iter(term.terms))
+            if variable in n_clauses:
+                return F
         for variable in term.terms:
+            variable.flatten()
             if variable in clauses:
                 remaining_variables = T
                 break
@@ -95,6 +100,7 @@ def SAT_solve(phi):
         return valuation
 
     var = select_next_variable(phi)
+    var = var.flatten()
 
     new_phi = simplify_by_clauses(phi, {var})
     new_valuation = SAT_solve(new_phi)
