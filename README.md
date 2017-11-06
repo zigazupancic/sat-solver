@@ -10,9 +10,9 @@ To run our SAT solver one should type
 
 ``` python sat_solver.py input_file_name.txt output_file_name.txt```
 
-in command-line. Here `input_file_name.txt` is the name of the file containing the formula, which we want to find valuation for, in Dimacs format, and `output_file_name.txt` is the name of the output file. We added an example of input file: **ne_obstaja_se.txt** in folder **examples**. Therefore, to run SAT solver on this file one would type
+in command-line. Here `input_file_name.txt` is the name of the file containing the formula, which we want to find valuation for, in Dimacs format, and `output_file_name.txt` is the name of the output file. We added an example of input file: **test_example.txt** in folder **examples**. Therefore, to run SAT solver on this file one would type
 
-``` python sat_solver.py examples/ne_obstaja_se.txt examples/ne_obstaja_se_out.txt```.
+``` python sat_solver.py examples/test_example.txt examples/test_example_out.txt```.
 
 ## Enivronment:
 Since we worked with propositional formulas, we introduced a new class `Formula` in **boolean.py**. We took this file from the [repository of our course](https://github.com/jaanos/LVR)(folder 'satsolver'). It contains three subclasses `Variable`, `Not` and `Multi` -- class `Multi` is further divided into subclasses `And` and `Or` -- and basic properties and functions we needed for further use.
