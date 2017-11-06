@@ -14,8 +14,6 @@ in command-line. Here `input_file_name.txt` is the name of the file containing t
 
 ``` python sat_solver.py examples/ne_obstaja_se.txt examples/ne_obstaja_se_out.txt```.
 
-Your final source code should reside on your repository, which should contain instructions for running your code in a file README.md. Include in this file the command-line command needed to execute your code on an input file.
-
 ## Enivronment:
 Since we worked with propositional formulas, we introduced a new class `Formula` in **boolean.py**. We took this file from the [repository of our course](https://github.com/jaanos/LVR)(folder 'satsolver'). It contains three subclasses `Variable`, `Not` and `Multi` -- class `Multi` is further divided into subclasses `And` and `Or` -- and basic properties and functions we needed for further use.
 
