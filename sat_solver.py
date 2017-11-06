@@ -38,10 +38,6 @@ def simplify_by_clauses(phi, clauses):
     remaining_terms = []
     for term in phi.terms:
         remaining_variables = []
-        if len(term.terms) == 1:
-            variable = next(iter(term.terms))
-            if variable in n_clauses:
-                return F
         for variable in term.terms:
             variable.flatten()
             if variable in clauses:
@@ -69,6 +65,8 @@ def find_unit_clauses(phi):
     for clause in phi.terms:
         clause = clause.flatten()
         if isinstance(clause, Variable) or isinstance(clause, Not):
+            if Not(clause).flatten() in unit_clauses:
+                return False
             unit_clauses.add(clause)
     return unit_clauses
 
@@ -86,6 +84,8 @@ def SAT_solve(phi):
         return False
 
     unit_clauses = find_unit_clauses(phi)
+    if unit_clauses is False:
+        return False
     if len(unit_clauses) > 0:
         phi = simplify_by_clauses(phi, unit_clauses)
         valuation.update(unit_clauses)
@@ -121,4 +121,7 @@ if __name__ == "__main__":
         out_file_name = sys.argv[2]
     else:
         out_file_name = sys.argv[1] + "_output"
-    dimacs_rw.dimacs_write(list(solution), out_file_name)
+    if solution is False:
+        dimacs_rw.dimacs_write([], out_file_name)
+    else:
+        dimacs_rw.dimacs_write(list(solution), out_file_name)
